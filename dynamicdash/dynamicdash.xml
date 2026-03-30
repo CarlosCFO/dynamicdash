@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+   <name>Dynamic Dashboard</name>
+   <key>dynamicdash</key>
+   <state>stable</state>
+   <logo></logo>
+   <description>
+      <short>
+         <pt_BR>Micro-dashboard dinâmico para tela de chamados</pt_BR>
+         <en_US>Dynamic micro-dashboard for ticket list view</en_US>
+      </short>
+      <long>
+         <pt_BR>Exibe cards com indicadores operacionais na tela de chamados do GLPI, reagindo aos filtros ativos do usuário. Indicadores: Abertos, Atrasados, Pendentes, Novos, % SLA e Reabertos (opcional). Sem criação de tabelas no banco de dados.</pt_BR>
+         <en_US>Displays operational indicator cards on GLPI ticket list view, reacting to the user active filters. Indicators: Open, Overdue, Pending, New, SLA percent and Reopened (optional). No database tables created.</en_US>
+      </long>
+   </description>
+   <homepage>https://ipt.br</homepage>
+   <download>https://ipt.br/glpi/plugins/dynamicdash</download>
+   <issues>https://ipt.br/glpi/plugins/dynamicdash/issues</issues>
+   <readme>https://ipt.br/glpi/plugins/dynamicdash/readme</readme>
+   <authors>
+      <author>Carlos Alberto Correa Filho - IPT.br</author>
+   </authors>
+   <versions>
+      <version>
+         <num>1.0.0</num>
+         <compatibility>~10.0</compatibility>
+         <date>2026-03-24</date>
+      </version>
+   </versions>
+   <langs>
+      <lang>pt_BR</lang>
+      <lang>en_US</lang>
+   </langs>
+   <license>GPLv3+</license>
+   <tags>
+      <pt_BR>
+         <tag>dashboard</tag>
+         <tag>chamados</tag>
+         <tag>indicadores</tag>
+         <tag>ITIL</tag>
+      </pt_BR>
+      <en_US>
+         <tag>dashboard</tag>
+         <tag>tickets</tag>
+         <tag>indicators</tag>
+         <tag>ITIL</tag>
+      </en_US>
+   </tags>
+</root>
