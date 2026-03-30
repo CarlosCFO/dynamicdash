@@ -1,20 +1,17 @@
-# Dynamic Dashboard - Traduções Português Brasil
-# Autor: Carlos Alberto Correa Filho - IPT.br
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: dynamicdash 1.0.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-24 00:00+0000\n"
-"PO-Revision-Date: 2026-03-24 00:00+0000\n"
+"Project-Id-Version: dynamicdash 0.9.0\n"
+"Report-Msgid-Bugs-To: https://github.com/CarlosCFO/dynamicdash/issues\n"
+"POT-Creation-Date: 2026-03-30 00:00+0000\n"
+"PO-Revision-Date: 2026-03-30 00:00+0000\n"
 "Last-Translator: Carlos Alberto Correa Filho\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Abertos"
-msgstr "Abertos"
+msgid "Atribuidos"
+msgstr "Atribuidos"
 
 msgid "Atrasados"
 msgstr "Atrasados"
@@ -28,26 +25,95 @@ msgstr "Novos"
 msgid "No prazo"
 msgstr "No prazo"
 
+msgid "TMA"
+msgstr "TMA"
+
+msgid "TMS"
+msgstr "TMS"
+
+msgid "CSAT"
+msgstr "CSAT"
+
+msgid "Aging"
+msgstr "Aging"
+
 msgid "Reabertos"
 msgstr "Reabertos"
 
-msgid "Dynamic Dashboard - Configuração"
-msgstr "Dynamic Dashboard - Configuração"
+msgid "Dynamic Dashboard"
+msgstr "Dynamic Dashboard"
 
-msgid "SLA - Limite verde (%)"
-msgstr "SLA - Limite verde (%)"
+msgid "SLA (% no prazo)"
+msgstr "SLA (% no prazo)"
 
-msgid "SLA - Limite amarelo (%)"
-msgstr "SLA - Limite amarelo (%)"
+msgid "Limite verde (%)"
+msgstr "Limite verde (%)"
 
-msgid "Reabertos - Limite verde (%)"
-msgstr "Reabertos - Limite verde (%)"
+msgid "Limite amarelo (%)"
+msgstr "Limite amarelo (%)"
 
-msgid "Reabertos - Limite amarelo (%)"
-msgstr "Reabertos - Limite amarelo (%)"
+msgid "Reabertos (%)"
+msgstr "Reabertos (%)"
+
+msgid "TMA - Tempo Medio Atendimento (minutos)"
+msgstr "TMA - Tempo Medio Atendimento (minutos)"
+
+msgid "Limite verde (min)"
+msgstr "Limite verde (min)"
+
+msgid "Limite amarelo (min)"
+msgstr "Limite amarelo (min)"
+
+msgid "TMS - Tempo Medio Solucao (minutos)"
+msgstr "TMS - Tempo Medio Solucao (minutos)"
+
+msgid "CSAT - Satisfacao (% equivalente 0-100)"
+msgstr "CSAT - Satisfacao (% equivalente 0-100)"
+
+msgid "Aging - Idade Backlog (dias)"
+msgstr "Aging - Idade Backlog (dias)"
+
+msgid "Limite verde (dias)"
+msgstr "Limite verde (dias)"
+
+msgid "Limite amarelo (dias)"
+msgstr "Limite amarelo (dias)"
 
 msgid "Cache (segundos)"
 msgstr "Cache (segundos)"
 
-msgid "Configurações salvas."
-msgstr "Configurações salvas."
+msgid "Cards para este perfil"
+msgstr "Cards para este perfil"
+
+msgid "Marque os indicadores que este perfil podera ver na tela de chamados."
+msgstr "Marque os indicadores que este perfil podera ver na tela de chamados."
+
+msgid "Cards Core"
+msgstr "Cards Core"
+
+msgid "Cards Opcionais"
+msgstr "Cards Opcionais"
+
+msgid "No prazo (SLA)"
+msgstr "No prazo (SLA)"
+
+msgid "TMA - Tempo Medio Atendimento"
+msgstr "TMA - Tempo Medio Atendimento"
+
+msgid "TMS - Tempo Medio Solucao"
+msgstr "TMS - Tempo Medio Solucao"
+
+msgid "CSAT - Satisfacao"
+msgstr "CSAT - Satisfacao"
+
+msgid "Aging - Idade do Backlog"
+msgstr "Aging - Idade do Backlog"
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Settings saved."
+msgstr "Configuracoes salvas."
+
+msgid "Sem permissao para editar perfis."
+msgstr "Sem permissao para editar perfis."
