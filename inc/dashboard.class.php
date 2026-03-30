@@ -20,14 +20,12 @@ class PluginDynamicdashDashboard {
         }
 
         $cards = [];
-
-        if (in_array('open', $active))    $cards['open']    = self::safeCall('cardOpen', $criteria, $is_deleted);
-        if (in_array('pending', $active)) $cards['pending'] = self::safeCall('cardPending', $criteria, $is_deleted);
-        if (in_array('new', $active))     $cards['new']     = self::safeCall('cardNew', $criteria, $is_deleted);
-
         $where = self::buildWhereFromCriteria($criteria);
 
+        if (in_array('open', $active))     $cards['open']     = self::safeCall('cardOpen', $where);
         if (in_array('overdue', $active))  $cards['overdue']  = self::safeCall('cardOverdue', $where);
+        if (in_array('pending', $active))  $cards['pending']  = self::safeCall('cardPending', $where);
+        if (in_array('new', $active))      $cards['new']      = self::safeCall('cardNew', $where);
         if (in_array('sla', $active))      $cards['sla']      = self::safeCall('cardSla', $where);
         if (in_array('reopened', $active)) $cards['reopened'] = self::safeCall('cardReopened', $where);
         if (in_array('tma', $active))      $cards['tma']      = self::safeCall('cardTma', $where);
@@ -62,23 +60,6 @@ class PluginDynamicdashDashboard {
             . '|' . $is_deleted
             . '|' . ($_SESSION['glpiactive_entity'] ?? 0)
         );
-    }
-
-    private static function searchCount(array $criteria, int $is_deleted = 0): int {
-        $params = [
-            'criteria'   => $criteria,
-            'is_deleted' => $is_deleted,
-            'start'      => 0,
-            'list_limit' => 1,
-            'sort'       => [1],
-            'order'      => ['ASC'],
-        ];
-
-        $data = Search::prepareDatasForSearch('Ticket', $params);
-        Search::constructSQL($data);
-        Search::constructData($data, true);
-
-        return (int)($data['data']['totalcount'] ?? 0);
     }
 
     private static function buildWhereFromCriteria(array $criteria): string {
@@ -259,51 +240,29 @@ class PluginDynamicdashDashboard {
         return 0;
     }
 
-    private static function formatMinutes(float $minutes): string {
-        if ($minutes < 0) return 'N/A';
-        $minutes = round($minutes);
-        if ($minutes < 60) return $minutes . 'm';
-        if ($minutes < 1440) {
-            $h = floor($minutes / 60);
-            $m = $minutes % 60;
-            return $h . 'h' . ($m > 0 ? $m . 'm' : '');
-        }
-        $d = floor($minutes / 1440);
-        $h = floor(($minutes % 1440) / 60);
-        return $d . 'd' . ($h > 0 ? $h . 'h' : '');
+    private static function formatDecimalHours(float $hours): string {
+        if ($hours < 0) return 'N/A';
+        return number_format($hours, 2, '.', '');
     }
 
-    private static function cardOpen(array $criteria, int $is_deleted): array {
-        $count = self::searchCount($criteria, $is_deleted);
+    // ==========================================================
+    // CARDS
+    // ==========================================================
+
+    private static function cardOpen(string $where): array {
+        $count = self::countQuery(
+            "SELECT COUNT(*) AS total FROM glpi_tickets
+             WHERE $where
+             AND glpi_tickets.status IN (2,3)
+             AND glpi_tickets.id IN (
+                 SELECT tickets_id FROM glpi_tickets_users WHERE type = 2
+             )"
+        );
         return [
             'value' => $count,
-            'label' => 'Abertos',
+            'label' => 'Atribuidos',
             'state' => 'info',
             'icon'  => 'info',
-        ];
-    }
-
-    private static function cardPending(array $criteria, int $is_deleted): array {
-        $c = $criteria;
-        $c[] = ['link' => 'AND', 'field' => 12, 'searchtype' => 'equals', 'value' => 4];
-        $count = self::searchCount($c, $is_deleted);
-        return [
-            'value' => $count,
-            'label' => 'Pendentes',
-            'state' => 'warning',
-            'icon'  => 'hourglass',
-        ];
-    }
-
-    private static function cardNew(array $criteria, int $is_deleted): array {
-        $c = $criteria;
-        $c[] = ['link' => 'AND', 'field' => 12, 'searchtype' => 'equals', 'value' => 1];
-        $count = self::searchCount($c, $is_deleted);
-        return [
-            'value' => $count,
-            'label' => 'Novos',
-            'state' => 'neutral',
-            'icon'  => 'circle',
         ];
     }
 
@@ -320,6 +279,35 @@ class PluginDynamicdashDashboard {
             'label' => 'Atrasados',
             'state' => $count > 0 ? 'critical' : 'positive',
             'icon'  => $count > 0 ? 'blocked' : 'check',
+        ];
+    }
+
+    private static function cardPending(string $where): array {
+        $count = self::countQuery(
+            "SELECT COUNT(*) AS total FROM glpi_tickets
+             WHERE $where AND glpi_tickets.status = 4"
+        );
+        return [
+            'value' => $count,
+            'label' => 'Pendentes',
+            'state' => 'warning',
+            'icon'  => 'hourglass',
+        ];
+    }
+
+    private static function cardNew(string $where): array {
+        $count = self::countQuery(
+            "SELECT COUNT(*) AS total FROM glpi_tickets
+             WHERE $where AND glpi_tickets.status = 1
+             AND glpi_tickets.id NOT IN (
+                 SELECT tickets_id FROM glpi_tickets_users WHERE type = 2
+             )"
+        );
+        return [
+            'value' => $count,
+            'label' => 'Novos',
+            'state' => 'neutral',
+            'icon'  => 'circle',
         ];
     }
 
@@ -380,48 +368,43 @@ class PluginDynamicdashDashboard {
 
     private static function cardTma(string $where): array {
         global $DB;
-        $sql = "SELECT AVG(TIMESTAMPDIFF(MINUTE, glpi_tickets.date,
-                    fa.first_assign_date)) AS tma_minutes, COUNT(*) AS total
+        $sql = "SELECT
+                    ROUND(AVG(
+                        CASE WHEN glpi_tickets.takeintoaccount_delay_stat > 0
+                        THEN glpi_tickets.takeintoaccount_delay_stat / 3600
+                        END
+                    ), 2) AS tma_horas,
+                    SUM(CASE WHEN glpi_tickets.takeintoaccount_delay_stat > 0
+                        THEN 1 ELSE 0 END) AS total
                 FROM glpi_tickets
-                INNER JOIN (
-                    SELECT l.items_id AS ticket_id,
-                           MIN(l.date_mod) AS first_assign_date
-                    FROM glpi_logs l
-                    WHERE l.itemtype = 'Ticket'
-                    AND l.id_search_option = 5
-                    GROUP BY l.items_id
-                ) AS fa ON fa.ticket_id = glpi_tickets.id
-                WHERE $where AND glpi_tickets.status IN (2,3,4,5,6)";
+                WHERE $where
+                AND glpi_tickets.status IN (2,3,4,5,6)";
         $tma = 0;
         $total = 0;
         $result = $DB->query($sql);
         if ($result && $row = $result->fetch_assoc()) {
-            $tma   = (float)($row['tma_minutes'] ?? 0);
+            $tma   = (float)($row['tma_horas'] ?? 0);
             $total = (int)($row['total'] ?? 0);
         }
-        $formatted = $total > 0 ? self::formatMinutes($tma) : 'N/A';
+        $formatted = $total > 0 ? self::formatDecimalHours($tma) : 'N/A';
+        $tma_minutes = $tma * 60;
         return [
             'value'  => $formatted,
             'label'  => 'TMA',
-            'state'  => $total > 0 ? PluginDynamicdashConfig::getState($tma, 'tma', true) : 'neutral',
+            'state'  => $total > 0 ? PluginDynamicdashConfig::getState($tma_minutes, 'tma', true) : 'neutral',
             'icon'   => 'stopwatch',
-            'detail' => "Tempo medio atendimento ($total tickets)",
+            'detail' => "Horas decimais ($total tickets)",
         ];
     }
 
     private static function cardTms(string $where): array {
         global $DB;
-        $sql = "SELECT AVG(TIMESTAMPDIFF(MINUTE, fa.first_assign_date,
-                    glpi_tickets.solvedate)) AS tms_minutes, COUNT(*) AS total
+        $sql = "SELECT
+                    ROUND(AVG(
+                        TIMESTAMPDIFF(SECOND, glpi_tickets.date, glpi_tickets.solvedate) / 3600
+                    ), 2) AS tms_horas,
+                    COUNT(*) AS total
                 FROM glpi_tickets
-                INNER JOIN (
-                    SELECT l.items_id AS ticket_id,
-                           MIN(l.date_mod) AS first_assign_date
-                    FROM glpi_logs l
-                    WHERE l.itemtype = 'Ticket'
-                    AND l.id_search_option = 5
-                    GROUP BY l.items_id
-                ) AS fa ON fa.ticket_id = glpi_tickets.id
                 WHERE $where
                 AND glpi_tickets.solvedate IS NOT NULL
                 AND glpi_tickets.status IN (5,6)";
@@ -429,16 +412,17 @@ class PluginDynamicdashDashboard {
         $total = 0;
         $result = $DB->query($sql);
         if ($result && $row = $result->fetch_assoc()) {
-            $tms   = (float)($row['tms_minutes'] ?? 0);
+            $tms   = (float)($row['tms_horas'] ?? 0);
             $total = (int)($row['total'] ?? 0);
         }
-        $formatted = $total > 0 ? self::formatMinutes($tms) : 'N/A';
+        $formatted = $total > 0 ? self::formatDecimalHours($tms) : 'N/A';
+        $tms_minutes = $tms * 60;
         return [
             'value'  => $formatted,
             'label'  => 'TMS',
-            'state'  => $total > 0 ? PluginDynamicdashConfig::getState($tms, 'tms', true) : 'neutral',
+            'state'  => $total > 0 ? PluginDynamicdashConfig::getState($tms_minutes, 'tms', true) : 'neutral',
             'icon'   => 'wrench',
-            'detail' => "Tempo medio solucao ($total tickets)",
+            'detail' => "Horas decimais ($total tickets)",
         ];
     }
 
